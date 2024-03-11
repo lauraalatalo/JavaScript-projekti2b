@@ -1,0 +1,28 @@
+html {
+    background: #DEDBD2
+}
+
+body {
+    background-color: #b0c4b1;
+    width: 40%;
+    padding: 20px;
+    margin: 20px;
+    border: 1px solid #4A5759;
+    border-radius: 10px;
+    color: black;
+    text-align: center;
+}
+
+button {
+    margin: 2px;
+}
+
+.button-active {
+    background-color: #b0c4b1;
+    color: black;
+    border: 2px solid #4CAF50;
+}
+
+input[type="checkbox"] {
+    margin: 2px 2px 2px 2px;
+}
