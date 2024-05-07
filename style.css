@@ -4,6 +4,7 @@ html {
 
 body {
     background-color: #b0c4b1;
+    font-family: Arial, sans-serif;
     width: 40%;
     padding: 20px;
     margin: 20px;
@@ -25,4 +26,17 @@ button {
 
 input[type="checkbox"] {
     margin: 2px 2px 2px 2px;
+}
+
+#todo-form {
+    margin-bottom: 10px;
+}
+
+.task {
+    margin-top: 10px;
+}
+
+.pure-button-primary, .pure-button-selected, a.pure-button-primary, a.pure-button-selected {
+    background-color: #96b497;
+    color: #fff;
 }

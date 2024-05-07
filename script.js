@@ -1,147 +1,111 @@
-const todoForm = document.getElementById('todo-form');
-const todoInput = document.getElementById('todo-input');
-const todoList = document.getElementById('todo-list');
-
-let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-
-renderTasks();
-
-todoForm.addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    if (!validateForm()) {
-        return;
-    }
-
-    const taskText = todoInput.value.trim();
-
-    const task = {
-        id: Date.now(),
-        text: taskText,
-        completed: false
-    };
-
-    tasks.push(task);
+$(document).ready(function() {
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
     renderTasks();
 
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-
-    todoInput.value = '';
-});
-
-function renderTasks() {
-    todoList.innerHTML = '';
-
-    tasks.forEach(task => {
-        const taskElement = document.createElement('div');
-        taskElement.id = task.id;
-        taskElement.classList.add('task');
-        if (task.completed) {
-            taskElement.classList.add('completed');
+    $('#todo-form').submit(function(event) {
+        event.preventDefault();
+        let taskText = $('#todo-input').val().trim();
+        if (taskText === '') {
+            alert('Et voi lisätä tyhjää tehtävää.');
+            return;
         }
-
-        taskElement.innerText = task.text;
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = task.completed;
-        checkbox.addEventListener('change', function() {
-            task.completed = !task.completed;
-            renderTasks();
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-        });
-        taskElement.prepend(checkbox);
-
-        const deleteButton = document.createElement('button');
-        deleteButton.innerText = 'Poista';
-        deleteButton.addEventListener('click', function() {
-            tasks = tasks.filter(t => t.id !== task.id);
-            renderTasks();
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-        });
-        taskElement.append(deleteButton);
-
-        todoList.appendChild(taskElement);
-    });
-}
-
-function validateForm() {
-    if (todoInput.value.trim() === '') {
-        alert('Et voi lisätä tyhjää tehtävää.');
-        return false;
-    }
-    return true;
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('mark-all-done-button').addEventListener('click', markAllDone);
-    document.getElementById('clear-all-button').addEventListener('click', clearAll);
-    document.getElementById('show-all-done').addEventListener('click', showAllDone);
-    document.getElementById('show-all-not-done').addEventListener('click', showAllNotDone);
-    document.getElementById('show-all').addEventListener('click', showAll);
-});
-
-function markAllDone() {
-    tasks.forEach(task => task.completed = true);
-    renderTasks();
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-}
-
-function clearAll() {
-    if (confirm('Haluatko varmasti tyhjentää kaikki tehtävät?')) {
-        tasks = [];
-        renderTasks();
+        let task = {
+            id: Date.now(),
+            text: taskText,
+            completed: false
+        };
+        tasks.push(task);
         localStorage.setItem('tasks', JSON.stringify(tasks));
-    }
-}
+        let $newTask = addToDOM(task);
+        $newTask.hide().fadeIn(500);
+        $('#todo-input').val('');
+    });
 
-function showAllDone() {
-    todoList.innerHTML = '';
-    tasks.forEach(task => {
+    function renderTasks() {
+        $('#todo-list').empty();
+        tasks.forEach(task => {
+            addToDOM(task).hide().fadeIn(500);
+        });
+    }
+
+    $('#show-all-done').click(function() {
+        $('.task').each(function() {
+            var $this = $(this);
+            if ($this.data('completed')) {
+                $this.slideDown();
+            } else {
+                $this.slideUp();
+            }
+        });
+    });
+
+    $('#show-all-not-done').click(function() {
+        $('.task').each(function() {
+            var $this = $(this);
+            if (!$this.data('completed')) {
+                $this.slideDown();
+            } else {
+                $this.slideUp();
+            }
+        });
+    });
+
+    $('#show-all').click(function() {
+        $('.task').each(function() {
+            $(this).slideDown();
+        });
+    });
+
+    $('#mark-all-done-button').click(function() {
+        tasks.forEach(task => {
+            task.completed = true;
+        });
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        renderTasks();
+    });
+
+    $('#clear-all-button').click(function() {
+        if (confirm('Haluatko varmasti tyhjentää kaikki tehtävät?')) {
+            $('#todo-list').children().fadeOut(500, function() {
+                tasks = [];
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                renderTasks();
+            });
+        }
+    });
+
+    function addToDOM(task) {
+        let $taskElement = $('<div></div>', {
+            'id': task.id,
+            'class': 'task',
+            'data-completed': task.completed,
+            'text': task.text
+        }).prepend($('<input>', {
+            'type': 'checkbox',
+            'checked': task.completed,
+            'change': function() {
+                task.completed = !task.completed;
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                renderTasks();
+            }
+        }));
+
         if (task.completed) {
-            addToDOM(task);
+            $taskElement.addClass('completed');
         }
-    });
-}
 
-function showAllNotDone() {
-    todoList.innerHTML = '';
-    tasks.forEach(task => {
-        if (!task.completed) {
-            addToDOM(task);
-        }
-    });
-}
+        $taskElement.append($('<button>', {
+            'text': 'Poista',
+            'click': function() {
+                $taskElement.fadeOut(500, function() {
+                    tasks = tasks.filter(t => t.id !== task.id);
+                    localStorage.setItem('tasks', JSON.stringify(tasks));
+                    renderTasks();
+                });
+            }
+        }));
 
-function showAll() {
-    renderTasks();
-}
-
-function addToDOM(task) {
-    const taskElement = document.createElement('div');
-    taskElement.classList.add('task');
-    taskElement.textContent = task.text;
-    todoList.appendChild(taskElement);
-}
-
-const buttonIds = ['show-all', 'show-all-not-done', 'show-all-done'];
-
-buttonIds.forEach(buttonId => {
-  const button = document.getElementById(buttonId);
-  button.addEventListener('click', function() {
-    buttonIds.forEach(id => {
-      const btn = document.getElementById(id);
-      btn.classList.remove('button-active');
-    });
-
-    this.classList.add('button-active');
-    
-    if (this.id === 'show-all-done') {
-        showAllDone();
-    } else if (this.id === 'show-all-not-done') {
-        showAllNotDone();
-    } else if (this.id === 'show-all') {
-      showAll();
+        $('#todo-list').append($taskElement);
+        return $taskElement;
     }
-  });
 });
